@@ -6,14 +6,6 @@ read -p "Enter the URL to display in kiosk mode: " kiosk_url
 # Ask the user for the hostname
 read -p "Enter the hostname for this Raspberry Pi: " pi_hostname
 
-# Update and upgrade the system
-sudo apt update && sudo apt full-upgrade -y
-
-# Install Git if it's not already installed
-if ! command -v git &> /dev/null; then
-    sudo apt install -y git
-fi
-
 # Install X Window System, Chromium, and unclutter
 sudo apt install -y --no-install-recommends xserver-xorg x11-xserver-utils xinit openbox
 sudo apt install -y chromium-browser unclutter
@@ -50,7 +42,7 @@ sudo mkdir -p /etc/systemd/system/getty@tty1.service.d
 cat <<EOL | sudo tee /etc/systemd/system/getty@tty1.service.d/override.conf
 [Service]
 ExecStart=
-ExecStart=-/sbin/agetty --autologin pi --noclear %I \$TERM
+ExecStart=-/sbin/agetty --autologin escapeworld --noclear %I \$TERM
 EOL
 
 # Configure .bash_profile to start X automatically
