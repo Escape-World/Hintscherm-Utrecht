@@ -13,7 +13,9 @@ sudo apt install -y chromium-browser unclutter
 # Set the hostname
 echo $pi_hostname | sudo tee /etc/hostname
 sudo sed -i "s/127.0.1.1.*/127.0.1.1\t$pi_hostname/g" /etc/hosts
-sudo hostname $pi_hostname
+echo "127.0.0.1   localhost.localdomain localhost" | sudo tee -a /etc/hosts
+echo "127.0.0.1   $pi_hostname" | sudo tee -a /etc/hosts
+sudo hostnamectl set-hostname $pi_hostname
 
 # Create Openbox autostart directory
 mkdir -p ~/.config/openbox
