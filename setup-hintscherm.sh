@@ -20,7 +20,7 @@ echo "127.0.0.1   localhost.localdomain localhost" | sudo tee -a /etc/hosts
 echo "127.0.0.1   $pi_hostname" | sudo tee -a /etc/hosts
 sudo hostnamectl set-hostname $pi_hostname
 
-# Create Openbox autostart directory
+# Create Openbox autostart directory if it doesn't exist
 mkdir -p ~/.config/openbox
 
 # Create and configure autostart script
@@ -37,7 +37,7 @@ unclutter -idle 0.1 -root &
 chromium-browser --noerrdialogs --disable-infobars --kiosk $kiosk_url
 
 # Disable input devices
-xinput disable $(xinput list --id-only)
+xinput disable \$(xinput list --id-only)
 EOL
 
 # Create and configure .xinitrc file
