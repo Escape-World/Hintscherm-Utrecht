@@ -16,6 +16,7 @@ sudo reboot
 2.  **Clone the Repository**:
     
 ```bash
+sudo apt install -y git
 git clone https://github.com/Escape-World/Hintscherm-Utrecht.git
 ```
     
