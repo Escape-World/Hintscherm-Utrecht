@@ -23,19 +23,19 @@ git clone https://github.com/Escape-World/Hintscherm-Utrecht.git
 3.  **Navigate to the Repository Directory**:
 
 ```bash
-cd raspberry-pi-kiosk-setup
+cd Hintscherm-Utrecht
 ```
     
 4.  **Make the Script Executable**:
 
 ```bash
-chmod +x setup-kiosk.sh
+chmod +x setup-hintscherm.sh
 ```
     
 5.  **Run the Script**:
 
 ```bash
-./setup-kiosk.sh
+./setup-hintscherm.sh
 ```
     
 5.  **Follow On-Screen Instructions**: 
