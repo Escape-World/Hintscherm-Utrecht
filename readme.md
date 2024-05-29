@@ -41,6 +41,8 @@ sudo raspi-config
 
 2. **Set to read-only**
 
-Navigate down to “Performance Options” and then “Overlay File System.” Select “Yes” to both the enable and write-protect questions.
+Navigate down to “Performance Options” and then “Overlay File System.” 
+Select “Yes” to both the enable and write-protect questions.
 
-It may take a minute or more while the system works, this is normal. Tab to the “Finish” button and reboot when prompted.
+It may take a minute or more while the system works, this is normal. 
+Tab to the “Finish” button and reboot when prompted.
