@@ -3,12 +3,19 @@
 # Ask the user for the URL to display
 read -p "Enter the URL to display in kiosk mode: " kiosk_url
 
+# Ask the user for the hostname
+read -p "Enter the hostname for this Raspberry Pi: " pi_hostname
+
 # Update and upgrade the system
 sudo apt update && sudo apt full-upgrade -y
 
 # Install X Window System, Chromium, and unclutter
 sudo apt install -y --no-install-recommends xserver-xorg x11-xserver-utils xinit openbox
 sudo apt install -y chromium-browser unclutter
+
+# Set the hostname
+sudo hostnamectl set-hostname $pi_hostname
+sudo sed -i "s/127.0.1.1.*/127.0.1.1\t$pi_hostname/g" /etc/hosts
 
 # Create Openbox autostart directory
 mkdir -p ~/.config/openbox
