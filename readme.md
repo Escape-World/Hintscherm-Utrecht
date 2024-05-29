@@ -1,4 +1,3 @@
-
 ### 1\. Prepare Your Raspberry Pi
 
 1.  **Install Raspberry Pi OS Lite x64**
@@ -6,21 +5,37 @@
 
 ### 2\. Running the kiosk script
 
-1.  **Clone the Repository**:
-    
-    ```git clone https://github.com/Escape-World/Hintscherm-Utrecht.git```
-    
-2.  **Navigate to the Repository Directory**:
+1. **Setup the Raspberry**
 
-    ```cd raspberry-pi-kiosk-setup```
-    
-3.  **Make the Script Executable**:
+```bash
+sudo apt update
+sudo apt full-upgrade -y
+sudo reboot
+```
 
-    ```chmod +x setup-kiosk.sh```
+2.  **Clone the Repository**:
     
-4.  **Run the Script**:
+```bash
+git clone https://github.com/Escape-World/Hintscherm-Utrecht.git
+```
+    
+3.  **Navigate to the Repository Directory**:
 
-    ```./setup-kiosk.sh```
+```bash
+cd raspberry-pi-kiosk-setup
+```
+    
+4.  **Make the Script Executable**:
+
+```bash
+chmod +x setup-kiosk.sh
+```
+    
+5.  **Run the Script**:
+
+```bash
+./setup-kiosk.sh
+```
     
 5.  **Follow On-Screen Instructions**: 
 The script will prompt for the URL to display and then proceed with the setup. The Raspberry Pi will reboot once the setup is complete.
