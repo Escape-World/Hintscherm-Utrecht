@@ -19,24 +19,28 @@ sudo reboot
 sudo apt install -y git
 git clone https://github.com/Escape-World/Hintscherm-Utrecht.git
 ```
-    
-3.  **Navigate to the Repository Directory**:
+
+3.  **Run the Script**:
 
 ```bash
-cd Hintscherm-Utrecht
+cd raspberry-pi-kiosk-setup
+chmod +x setup-kiosk.sh
+sudo ./setup-kiosk.sh
 ```
     
-4.  **Make the Script Executable**:
-
-```bash
-chmod +x setup-hintscherm.sh
-```
-    
-5.  **Run the Script**:
-
-```bash
-./setup-hintscherm.sh
-```
-    
-5.  **Follow On-Screen Instructions**: 
+4.  **Follow On-Screen Instructions**: 
 The script will prompt for the URL to display and then proceed with the setup. The Raspberry Pi will reboot once the setup is complete.
+
+### 3\. Setting the Pi in read-only mode
+
+1. **Open config**
+
+```bash
+sudo raspi-config
+```
+
+2. **Set to read-only**
+
+Navigate down to “Performance Options” and then “Overlay File System.” Select “Yes” to both the enable and write-protect questions.
+
+It may take a minute or more while the system works, this is normal. Tab to the “Finish” button and reboot when prompted.
