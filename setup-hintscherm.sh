@@ -33,11 +33,11 @@ xset -dpms
 # Hide the mouse cursor after 0.1 seconds of inactivity
 unclutter -idle 0.1 -root &
 
-# Disable input devices
-xinput disable $(xinput list --id-only)
-
 # Start Chromium in kiosk mode
 chromium-browser --noerrdialogs --disable-infobars --kiosk $kiosk_url
+
+# Disable input devices
+xinput disable $(xinput list --id-only)
 EOL
 
 # Create and configure .xinitrc file
