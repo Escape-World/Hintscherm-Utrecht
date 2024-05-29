@@ -23,9 +23,9 @@ git clone https://github.com/Escape-World/Hintscherm-Utrecht.git
 3.  **Run the Script**:
 
 ```bash
-cd raspberry-pi-kiosk-setup
-chmod +x setup-kiosk.sh
-sudo ./setup-kiosk.sh
+cd Hintscherm-Utrecht
+chmod +x setup-hintscherm.sh
+sudo ./setup-hintscherm.sh
 ```
     
 4.  **Follow On-Screen Instructions**: 
