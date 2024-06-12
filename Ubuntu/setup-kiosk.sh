@@ -12,15 +12,16 @@ WORK_DIR="/work"
 OVERLAY_DIR="/overlay"
 ROOTFS_DIR="/rootfs"
 
+# Install overlayroot if not already installed
+if ! dpkg -l | grep -q overlayroot; then
+  echo "Installing overlayroot..."
+  apt-get update
+  apt-get install -y overlayroot
+fi
+
 # Create necessary directories
 echo "Creating necessary directories..."
 mkdir -p $BASE_DIR $UPPER_DIR $WORK_DIR $OVERLAY_DIR
-
-# Ensure the base directory is not already mounted
-if mountpoint -q $BASE_DIR; then
-  echo "Unmounting the base directory..."
-  umount $BASE_DIR
-fi
 
 # Mount the root filesystem as read-only to the base directory
 echo "Mounting the root filesystem as read-only to the base directory..."
@@ -38,8 +39,8 @@ WORK_DIR="/work"
 OVERLAY_DIR="/overlay"
 ROOTFS_DIR="/rootfs"
 
-# Mount the overlay filesystem
-echo "Mounting the overlay filesystem..."
+# Create the overlay filesystem
+mkdir -p $ROOTFS_DIR
 mount -t overlay overlay -o lowerdir=$BASE_DIR,upperdir=$UPPER_DIR,workdir=$WORK_DIR $ROOTFS_DIR
 
 # Switch to the new root filesystem
