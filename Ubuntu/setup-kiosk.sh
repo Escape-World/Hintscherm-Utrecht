@@ -7,8 +7,7 @@ if [ -z "$1" ]; then
 fi
 
 KIOSK_URL=$1
-USER=$(logname)
-USER_HOME=$(eval echo "~$USER")
+
 
 # Update and install necessary packages
 apt update
@@ -21,11 +20,10 @@ chromium-browser --kiosk --no-first-run --disable-infobars $KIOSK_URL
 EOF
 
 # Create .xinitrc file to start Openbox
-mkdir -p $USER_HOME
-cat <<EOF > $USER_HOME/.xinitrc
+cat <<EOF > ~/escapeworld/.xinitrc
 exec openbox-session
 EOF
-chown $USER:$USER $USER_HOME/.xinitrc
+chown escapeworld:escapeworld ~/escapeworld/.xinitrc
 
 # Create systemd service to start X at boot
 cat <<EOF > /etc/systemd/system/kiosk.service
@@ -34,7 +32,7 @@ Description=Kiosk Mode
 After=systemd-user-sessions.service
 
 [Service]
-User=$USER
+User=escapeworld
 Environment=DISPLAY=:0
 ExecStart=/usr/bin/startx
 Restart=always
