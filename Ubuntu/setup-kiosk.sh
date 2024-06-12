@@ -11,8 +11,8 @@ USER=$(logname)
 USER_HOME=$(eval echo "~$USER")
 
 # Update and install necessary packages
-apt-get update
-apt-get install -y xorg openbox chromium-browser
+apt update
+apt install -y xorg openbox chromium-browser
 
 # Create Openbox autostart file
 mkdir -p /etc/xdg/openbox
