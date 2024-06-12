@@ -1,102 +1,87 @@
 #!/bin/bash
 
-set -e
-
-# Prompt for the kiosk URL
-read -p "Enter the URL for the kiosk mode: " KIOSK_URL
-
-# Variables
-BASE_DIR="/base"
-UPPER_DIR="/upper"
-WORK_DIR="/work"
-OVERLAY_DIR="/overlay"
-ROOTFS_DIR="/rootfs"
-
-# Create necessary directories
-echo "Creating necessary directories..."
-mkdir -p $BASE_DIR $UPPER_DIR $WORK_DIR $OVERLAY_DIR
-
-# Create an init script to setup the overlay filesystem
-cat << 'EOF' > /usr/local/bin/setup-overlayfs.sh
-#!/bin/sh
-
-PREREQ=''
-
-prereqs() {
-  echo "$PREREQ"
-}
-
-case $1 in
-prereqs)
-  prereqs
-  exit 0
-  ;;
-esac
-
-# Boot normally when the user selects single user mode.
-if grep single /proc/cmdline >/dev/null; then
-  exit 0
+# Check if URL is provided
+if [ -z "$1" ]; then
+  echo "Usage: $0 <kiosk-url>"
+  exit 1
 fi
 
-ro_mount_point="${rootmnt%/}.ro"
-rw_mount_point="${rootmnt%/}.rw"
+KIOSK_URL=$1
 
-# Create mount points for the read-only and read/write layers:
-mkdir "${ro_mount_point}" "${rw_mount_point}"
+# Update and install necessary packages
+apt-get update
+apt-get install -y xorg openbox chromium-browser
 
-# Move the already-mounted root filesystem to the ro mount point:
-mount --move "${rootmnt}" "${ro_mount_point}"
-
-# Mount the read/write filesystem:
-mount -t tmpfs root.rw "${rw_mount_point}"
-
-# Mount the union:
-mount -t aufs -o "dirs=${rw_mount_point}=rw:${ro_mount_point}=ro" root.union "${rootmnt}"
-
-# Correct the permissions of /:
-chmod 755 "${rootmnt}"
-
-# Make sure the individual ro and rw mounts are accessible from within the root
-# once the union is assumed as /. This makes it possible to access the
-# component filesystems individually.
-mkdir "${rootmnt}/ro" "${rootmnt}/rw"
-mount --move "${ro_mount_point}" "${rootmnt}/ro"
-mount --move "${rw_mount_point}" "${rootmnt}/rw"
-
-# Make sure checkroot.sh doesn't run. It might fail or erroneously remount /.
-rm -f "${rootmnt}/etc/rcS.d"/S[0-9][0-9]checkroot.sh
+# Create Openbox autostart file
+mkdir -p /etc/xdg/openbox
+cat <<EOF > /etc/xdg/openbox/autostart
+chromium-browser --kiosk --no-first-run --disable-infobars $KIOSK_URL
 EOF
 
-# Make the script executable
-chmod +x /usr/local/bin/setup-overlayfs.sh
+# Create .xinitrc file to start Openbox
+cat <<EOF > /home/$USER/.xinitrc
+exec openbox-session
+EOF
+chown $USER:$USER /home/$USER/.xinitrc
 
-# Modify the GRUB configuration to use the overlay setup script on boot
-echo "Configuring GRUB to use the overlay setup script..."
-GRUB_CMDLINE_LINUX="init=/usr/local/bin/setup-overlayfs.sh"
-sed -i "s|^GRUB_CMDLINE_LINUX=.*|GRUB_CMDLINE_LINUX=\"$GRUB_CMDLINE_LINUX\"|" /etc/default/grub
+# Create systemd service to start X at boot
+cat <<EOF > /etc/systemd/system/kiosk.service
+[Unit]
+Description=Kiosk Mode
+After=systemd-user-sessions.service
 
-# Update GRUB
-update-grub
-
-# Set up autologin for 'escapeworld' user
-echo "Setting up autologin for 'escapeworld' user..."
-mkdir -p /etc/systemd/system/getty@tty1.service.d/
-cat << 'EOF' > /etc/systemd/system/getty@tty1.service.d/override.conf
 [Service]
-ExecStart=
-ExecStart=-/sbin/agetty --autologin escapeworld --noclear %I $TERM
+User=$USER
+Environment=DISPLAY=:0
+ExecStart=/usr/bin/startx
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
 EOF
 
-# Set up kiosk mode for 'escapeworld' user
-echo "Setting up kiosk mode..."
-cat << EOF > /home/escapeworld/.xsession
-#!/bin/bash
-xset -dpms
-xset s off
-xset s noblank
-exec /usr/bin/chromium-browser --kiosk "$KIOSK_URL"
-EOF
-chmod +x /home/escapeworld/.xsession
-chown escapeworld:escapeworld /home/escapeworld/.xsession
+# Enable the kiosk service
+systemctl enable kiosk.service
 
-echo "Kiosk setup complete. Reboot to apply changes."
+# Create and configure a read-only file system
+# /etc/fstab modifications for read-only root and other writable directories
+cat <<EOF >> /etc/fstab
+# Read-only root filesystem
+/dev/sda1 / ext4 ro,noatime,errors=remount-ro 0 1
+
+# Writable filesystems
+/dev/sda2 /var ext4 defaults 0 2
+tmpfs /tmp tmpfs defaults 0 0
+/var/local/home /home none bind 0 0
+/var/local/srv /srv none bind 0 0
+EOF
+
+# Create writable directories
+mkdir -p /var/local/home /var/local/srv
+
+# Configure necessary /etc symlinks for read-only root
+ln -s /var/local/adjtime /etc/adjtime
+ln -s /run/network /etc/network/run
+
+# Environment variable for blkid
+echo "BLKID_FILE=/var/local/blkid.tab" >> /etc/environment
+
+# Update /etc/lvm/lvm.conf
+sed -i 's|backup_dir = "/etc/lvm/backup"|backup_dir = "/var/backups/lvm/backup"|' /etc/lvm/lvm.conf
+sed -i 's|archive_dir = "/etc/lvm/archive"|archive_dir = "/var/backups/lvm/archive"|' /etc/lvm/lvm.conf
+
+# Move LVM backup and archive directories
+mkdir -p /var/backups/lvm
+mv /etc/lvm/backup /var/backups/lvm/
+mv /etc/lvm/archive /var/backups/lvm/
+
+# Add apt-get remount configuration
+cat <<EOF >> /etc/apt/apt.conf
+DPkg {
+    // Auto re-mounting of a readonly /
+    Pre-Invoke { "mount -o remount,rw /"; };
+    Post-Invoke { "test \${NO_APT_REMOUNT:-no} = yes || mount -o remount,ro / || true"; };
+};
+EOF
+
+echo "Kiosk setup complete. Please reboot the system."
