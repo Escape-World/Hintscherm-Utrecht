@@ -25,6 +25,8 @@ echo "Updating bootloader configuration..."
 sed -i '/overlayroot/d' /etc/default/grub
 update-grub
 
+apt autoremove
+
 # Step 5: Reboot
 echo "Rebooting..."
 reboot
