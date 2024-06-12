@@ -7,6 +7,8 @@ if [ -z "$1" ]; then
 fi
 
 KIOSK_URL=$1
+USER=$(logname)
+USER_HOME=$(eval echo "~$USER")
 
 # Update and install necessary packages
 apt-get update
@@ -19,10 +21,11 @@ chromium-browser --kiosk --no-first-run --disable-infobars $KIOSK_URL
 EOF
 
 # Create .xinitrc file to start Openbox
-cat <<EOF > /home/$USER/.xinitrc
+mkdir -p $USER_HOME
+cat <<EOF > $USER_HOME/.xinitrc
 exec openbox-session
 EOF
-chown $USER:$USER /home/$USER/.xinitrc
+chown $USER:$USER $USER_HOME/.xinitrc
 
 # Create systemd service to start X at boot
 cat <<EOF > /etc/systemd/system/kiosk.service
@@ -60,20 +63,22 @@ EOF
 mkdir -p /var/local/home /var/local/srv
 
 # Configure necessary /etc symlinks for read-only root
-ln -s /var/local/adjtime /etc/adjtime
-ln -s /run/network /etc/network/run
+ln -sf /var/local/adjtime /etc/adjtime
+ln -sf /run/network /etc/network/run
 
 # Environment variable for blkid
 echo "BLKID_FILE=/var/local/blkid.tab" >> /etc/environment
 
-# Update /etc/lvm/lvm.conf
-sed -i 's|backup_dir = "/etc/lvm/backup"|backup_dir = "/var/backups/lvm/backup"|' /etc/lvm/lvm.conf
-sed -i 's|archive_dir = "/etc/lvm/archive"|archive_dir = "/var/backups/lvm/archive"|' /etc/lvm/lvm.conf
+# Ensure /etc/lvm/lvm.conf exists before modifying it
+if [ -f /etc/lvm/lvm.conf ]; then
+  sed -i 's|backup_dir = "/etc/lvm/backup"|backup_dir = "/var/backups/lvm/backup"|' /etc/lvm/lvm.conf
+  sed -i 's|archive_dir = "/etc/lvm/archive"|archive_dir = "/var/backups/lvm/archive"|' /etc/lvm/lvm.conf
 
-# Move LVM backup and archive directories
-mkdir -p /var/backups/lvm
-mv /etc/lvm/backup /var/backups/lvm/
-mv /etc/lvm/archive /var/backups/lvm/
+  # Move LVM backup and archive directories
+  mkdir -p /var/backups/lvm
+  mv /etc/lvm/backup /var/backups/lvm/
+  mv /etc/lvm/archive /var/backups/lvm/
+fi
 
 # Add apt-get remount configuration
 cat <<EOF >> /etc/apt/apt.conf
