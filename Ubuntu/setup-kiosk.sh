@@ -16,6 +16,12 @@ ROOTFS_DIR="/rootfs"
 echo "Creating necessary directories..."
 mkdir -p $BASE_DIR $UPPER_DIR $WORK_DIR $OVERLAY_DIR
 
+# Ensure the base directory is not already mounted
+if mountpoint -q $BASE_DIR; then
+  echo "Unmounting the base directory..."
+  umount $BASE_DIR
+fi
+
 # Mount the root filesystem as read-only to the base directory
 echo "Mounting the root filesystem as read-only to the base directory..."
 mount --bind / $BASE_DIR
