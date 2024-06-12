@@ -1,90 +1,66 @@
 #!/bin/bash
 
-# Check if URL is provided
-if [ -z "$1" ]; then
-  echo "Usage: $0 <kiosk-url>"
-  exit 1
+# Check if running as root
+if [ "$EUID" -ne 0 ]
+  then echo "Please run as root"
+  exit
 fi
 
-KIOSK_URL=$1
+# Check if URL argument is provided
+if [ -z "$1" ]
+  then
+    echo "Usage: sudo ./setup_read_only.sh <URL>"
+    exit
+fi
 
+# URL for Chromium kiosk mode
+URL="$1"
 
-# Update and install necessary packages
+# Step 1: Modify /etc/fstab to mount root filesystem as read-only
+echo "Modifying /etc/fstab..."
+echo "UUID=$(blkid -s UUID -o value /) / ext4 ro 0 1" | tee -a /etc/fstab > /dev/null
+
+# Step 2: Install overlayroot
+echo "Installing overlayroot..."
 apt update
-apt install -y xorg openbox chromium-browser
+apt install -y overlayroot
 
-# Create Openbox autostart file
-mkdir -p /etc/xdg/openbox
-cat <<EOF > /etc/xdg/openbox/autostart
-chromium-browser --kiosk --no-first-run --disable-infobars $KIOSK_URL
+# Step 3: Configure overlayroot
+echo "Configuring overlayroot..."
+cat <<EOF > /etc/overlayroot.conf
 EOF
 
-# Create .xinitrc file to start Openbox
-cat <<EOF > ~/escapeworld/.xinitrc
-exec openbox-session
-EOF
-chown escapeworld:escapeworld ~/escapeworld/.xinitrc
-
-# Create systemd service to start X at boot
-cat <<EOF > /etc/systemd/system/kiosk.service
-[Unit]
-Description=Kiosk Mode
-After=systemd-user-sessions.service
-
-[Service]
-User=escapeworld
-Environment=DISPLAY=:0
-ExecStart=/usr/bin/startx
-Restart=always
-
-[Install]
-WantedBy=multi-user.target
+cat <<EOF >> /etc/overlayroot.conf
+overlayroot="tmpfs"
+overlayroot_cfgdisk="tmpfs"
+overlayroot_mode="ro"
+overlayroot_options="sync=always"
+overlayroot_tmpfs_size="50%"
+overlayroot_quiet="yes"
 EOF
 
-# Enable the kiosk service
-systemctl enable kiosk.service
+# Step 4: Update bootloader configuration
+echo "Updating bootloader configuration..."
+sed -i 's/GRUB_CMDLINE_LINUX="\(.*\)"/GRUB_CMDLINE_LINUX="\1 overlayroot=tmpfs"/' /etc/default/grub
+update-grub
 
-# Create and configure a read-only file system
-# /etc/fstab modifications for read-only root and other writable directories
-cat <<EOF >> /etc/fstab
-# Read-only root filesystem
-/dev/sda1 / ext4 ro,noatime,errors=remount-ro 0 1
+# Step 5: Install Chromium and configure kiosk mode
+echo "Installing Chromium..."
+apt install -y chromium-browser
 
-# Writable filesystems
-/dev/sda2 /var ext4 defaults 0 2
-tmpfs /tmp tmpfs defaults 0 0
-/var/local/home /home none bind 0 0
-/var/local/srv /srv none bind 0 0
+echo "Configuring Chromium kiosk mode..."
+mkdir -p /etc/xdg/autostart
+cat <<EOF > /etc/xdg/autostart/chromium.desktop
+[Desktop Entry]
+Type=Application
+Exec=chromium-browser --noerrdialogs --kiosk "$URL"
+Hidden=false
+X-GNOME-Autostart-enabled=true
+Name[en_US]=Chromium
+Name=Chromium
+Comment=Start Chromium in kiosk mode
 EOF
 
-# Create writable directories
-mkdir -p /var/local/home /var/local/srv
-
-# Configure necessary /etc symlinks for read-only root
-ln -sf /var/local/adjtime /etc/adjtime
-ln -sf /run/network /etc/network/run
-
-# Environment variable for blkid
-echo "BLKID_FILE=/var/local/blkid.tab" >> /etc/environment
-
-# Ensure /etc/lvm/lvm.conf exists before modifying it
-if [ -f /etc/lvm/lvm.conf ]; then
-  sed -i 's|backup_dir = "/etc/lvm/backup"|backup_dir = "/var/backups/lvm/backup"|' /etc/lvm/lvm.conf
-  sed -i 's|archive_dir = "/etc/lvm/archive"|archive_dir = "/var/backups/lvm/archive"|' /etc/lvm/lvm.conf
-
-  # Move LVM backup and archive directories
-  mkdir -p /var/backups/lvm
-  mv /etc/lvm/backup /var/backups/lvm/
-  mv /etc/lvm/archive /var/backups/lvm/
-fi
-
-# Add apt-get remount configuration
-cat <<EOF >> /etc/apt/apt.conf
-DPkg {
-    // Auto re-mounting of a readonly /
-    Pre-Invoke { "mount -o remount,rw /"; };
-    Post-Invoke { "test \${NO_APT_REMOUNT:-no} = yes || mount -o remount,ro / || true"; };
-};
-EOF
-
-echo "Kiosk setup complete. Please reboot the system."
+# Step 6: Reboot
+echo "Rebooting..."
+reboot
