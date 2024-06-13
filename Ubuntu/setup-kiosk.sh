@@ -56,20 +56,20 @@ Name=Chromium
 Comment=Start Chromium in kiosk mode
 EOF
 
-# Step 6: Install unclutter to hide the cursor
-echo "Installing unclutter..."
-apt install -y unclutter
+# Step 6: Install unclutter-xfixes to hide the cursor immediately
+echo "Installing unclutter-xfixes..."
+apt install -y unclutter-xfixes
 
-echo "Configuring unclutter to hide the cursor..."
-cat <<EOF > /etc/xdg/autostart/unclutter.desktop
+echo "Configuring unclutter-xfixes to hide the cursor immediately..."
+cat <<EOF > /etc/xdg/autostart/unclutter-xfixes.desktop
 [Desktop Entry]
 Type=Application
-Exec=unclutter -idle 0 
+Exec=unclutter-xfixes -init
 Hidden=false
 X-GNOME-Autostart-enabled=true
-Name[en_US]=Unclutter
-Name=Unclutter
-Comment=Hide the cursor when idle
+Name[en_US]=Unclutter-xfixes
+Name=Unclutter-xfixes
+Comment=Hide the cursor immediately
 EOF
 
 # Step 7: Disable screen timeout and screensaver
