@@ -6,15 +6,7 @@ if [ "$EUID" -ne 0 ]
   exit
 fi
 
-# Check if URL argument is provided
-if [ -z "$1" ]
-  then
-    echo "Usage: sudo ./setup_read_only.sh <URL>"
-    exit
-fi
-
-# URL for Chromium kiosk mode
-URL="$1"
+read -p "Enter the URL to display in kiosk mode: " URL
 
 # Step 1: Modify /etc/fstab to mount root filesystem as read-only
 echo "Modifying /etc/fstab..."

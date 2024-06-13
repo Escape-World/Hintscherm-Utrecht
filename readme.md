@@ -1,3 +1,5 @@
+# Raspberry Setup
+
 ### 1\. Prepare Your Raspberry Pi
 
 1.  **Install Raspberry Pi OS Lite x64**
@@ -46,3 +48,32 @@ Select “Yes” to both the enable and write-protect questions.
 
 It may take a minute or more while the system works, this is normal. 
 Tab to the “Finish” button and reboot when prompted.
+
+
+# Ubuntu Setup
+
+### 1\. Install Ubuntu
+
+Install Ubuntu LTS (tested on 24.04)
+
+### 2\. Running the kiosk script
+
+1.  **Clone the Repository**:
+
+```bash
+sudo apt update
+sudo apt install -y git
+git clone https://github.com/Escape-World/Hintscherm-Utrecht.git
+```
+
+2.  **Run the script**:
+
+```bash
+cd Hintscherm-Utrecht/Ubuntu
+chmod +x setup-kiosk.sh
+sudo ./setup-kiosk.sh
+```
+
+3.  **Follow On-Screen Instructions**: 
+The script will prompt for the URL to display and then proceed with the setup. Ubuntu will reboot once the setup is complete.
+Ubuntu will automatically be set to read only. After the script is done, you cannot change any settings and not revert setting it in read-only. 
