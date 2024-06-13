@@ -59,6 +59,22 @@ Name=Chromium
 Comment=Start Chromium in kiosk mode
 EOF
 
-# Step 6: Reboot
+# Step 6: Install unclutter to hide the cursor
+echo "Installing unclutter..."
+apt install -y unclutter
+
+echo "Configuring unclutter to hide the cursor..."
+cat <<EOF > /etc/xdg/autostart/unclutter.desktop
+[Desktop Entry]
+Type=Application
+Exec=unclutter -idle 0
+Hidden=false
+X-GNOME-Autostart-enabled=true
+Name[en_US]=Unclutter
+Name=Unclutter
+Comment=Hide the cursor when idle
+EOF
+
+# Step 7: Reboot
 echo "Rebooting..."
 reboot
