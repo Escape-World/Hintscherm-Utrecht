@@ -27,8 +27,6 @@ apt install -y overlayroot
 
 # Step 3: Configure overlayroot
 echo "Configuring overlayroot..."
-cat <<EOF > /etc/overlayroot.conf
-EOF
 
 cat <<EOF >> /etc/overlayroot.conf
 overlayroot="tmpfs"
