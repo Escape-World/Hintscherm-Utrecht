@@ -54,7 +54,7 @@ Tab to the “Finish” button and reboot when prompted.
 
 ### 1\. Install Ubuntu
 
-Install Ubuntu LTS (tested on 24.04)
+Install Ubuntu LTS (tested on 24.04). When setting up the user account, uncheck "Require my password to log in".
 
 ### 2\. Running the kiosk script
 
