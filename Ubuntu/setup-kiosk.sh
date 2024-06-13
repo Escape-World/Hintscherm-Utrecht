@@ -32,6 +32,11 @@ EOF
 # Step 4: Update bootloader configuration
 echo "Updating bootloader configuration..."
 sed -i 's/GRUB_CMDLINE_LINUX="\(.*\)"/GRUB_CMDLINE_LINUX="\1 overlayroot=tmpfs"/' /etc/default/grub
+
+# Change GRUB_TIMEOUT to 0
+echo "Setting GRUB_TIMEOUT to 0..."
+sed -i 's/^GRUB_TIMEOUT=.*/GRUB_TIMEOUT=0/' /etc/default/grub
+
 update-grub
 
 # Step 5: Install Chromium and configure kiosk mode
@@ -59,7 +64,7 @@ echo "Configuring unclutter to hide the cursor..."
 cat <<EOF > /etc/xdg/autostart/unclutter.desktop
 [Desktop Entry]
 Type=Application
-Exec=unclutter -idle 0
+Exec=unclutter -idle 0 
 Hidden=false
 X-GNOME-Autostart-enabled=true
 Name[en_US]=Unclutter
@@ -67,6 +72,13 @@ Name=Unclutter
 Comment=Hide the cursor when idle
 EOF
 
-# Step 7: Reboot
+# Step 7: Disable screen timeout and screensaver
+echo "Disabling screen timeout and screensaver..."
+gsettings set org.gnome.desktop.session idle-delay 0
+gsettings set org.gnome.desktop.screensaver lock-enabled false
+systemctl stop lightdm.service
+systemctl disable lightdm.service
+
+# Step 8: Reboot
 echo "Rebooting..."
 reboot
