@@ -54,7 +54,13 @@ Tab to the “Finish” button and reboot when prompted.
 
 ### 1\. Install Ubuntu
 
+1.  **Install**:
+
 Install Ubuntu LTS (tested on 24.04). When setting up the user account, uncheck "Require my password to log in".
+
+2.  **Turn off power saving options**:
+
+Go into the Ubuntu settings and turn off all power saving options.
 
 ### 2\. Running the kiosk script
 
