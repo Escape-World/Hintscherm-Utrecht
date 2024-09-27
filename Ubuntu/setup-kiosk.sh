@@ -8,36 +8,36 @@ fi
 
 read -p "Enter the URL to display in kiosk mode: " URL
 
-# Step 1: Modify /etc/fstab to mount root filesystem as read-only
-echo "Modifying /etc/fstab..."
-echo "UUID=$(blkid -s UUID -o value /) / ext4 ro 0 1" | tee -a /etc/fstab > /dev/null
+# # Step 1: Modify /etc/fstab to mount root filesystem as read-only
+# echo "Modifying /etc/fstab..."
+# echo "UUID=$(blkid -s UUID -o value /) / ext4 ro 0 1" | tee -a /etc/fstab > /dev/null
 
-# Step 2: Install overlayroot
-echo "Installing overlayroot..."
-apt update
-apt install -y overlayroot
+# # Step 2: Install overlayroot
+# echo "Installing overlayroot..."
+# apt update
+# apt install -y overlayroot
 
-# Step 3: Configure overlayroot
-echo "Configuring overlayroot..."
+# # Step 3: Configure overlayroot
+# echo "Configuring overlayroot..."
 
-cat <<EOF >> /etc/overlayroot.conf
-overlayroot="tmpfs"
-overlayroot_cfgdisk="tmpfs"
-overlayroot_mode="ro"
-overlayroot_options="sync=always"
-overlayroot_tmpfs_size="50%"
-overlayroot_quiet="yes"
-EOF
+# cat <<EOF >> /etc/overlayroot.conf
+# overlayroot="tmpfs"
+# overlayroot_cfgdisk="tmpfs"
+# overlayroot_mode="ro"
+# overlayroot_options="sync=always"
+# overlayroot_tmpfs_size="50%"
+# overlayroot_quiet="yes"
+# EOF
 
-# Step 4: Update bootloader configuration
-echo "Updating bootloader configuration..."
-sed -i 's/GRUB_CMDLINE_LINUX="\(.*\)"/GRUB_CMDLINE_LINUX="\1 overlayroot=tmpfs"/' /etc/default/grub
+# # Step 4: Update bootloader configuration
+# echo "Updating bootloader configuration..."
+# sed -i 's/GRUB_CMDLINE_LINUX="\(.*\)"/GRUB_CMDLINE_LINUX="\1 overlayroot=tmpfs"/' /etc/default/grub
 
-# Change GRUB_TIMEOUT to 0
-echo "Setting GRUB_TIMEOUT to 0..."
-sed -i 's/^GRUB_TIMEOUT=.*/GRUB_TIMEOUT=0/' /etc/default/grub
+# # Change GRUB_TIMEOUT to 0
+# echo "Setting GRUB_TIMEOUT to 0..."
+# sed -i 's/^GRUB_TIMEOUT=.*/GRUB_TIMEOUT=0/' /etc/default/grub
 
-update-grub
+# update-grub
 
 # Step 5: Install Chromium and configure kiosk mode
 echo "Installing Chromium..."
@@ -48,7 +48,7 @@ mkdir -p /etc/xdg/autostart
 cat <<EOF > /etc/xdg/autostart/chromium.desktop
 [Desktop Entry]
 Type=Application
-Exec=chromium-browser --noerrdialogs --kiosk "$URL"
+Exec=chromium-browser --noerrdialogs --autoplay-policy=no-user-gesture-required --enable-features=OverlayScrollbar --disable-restore-session-state --kiosk "$URL"
 Hidden=false
 X-GNOME-Autostart-enabled=true
 Name[en_US]=Chromium
@@ -64,7 +64,7 @@ echo "Configuring unclutter-xfixes to hide the cursor immediately..."
 cat <<EOF > /etc/xdg/autostart/unclutter-xfixes.desktop
 [Desktop Entry]
 Type=Application
-Exec=unclutter-xfixes -init
+Exec=unclutter --timeout 1 --start-hidden
 Hidden=false
 X-GNOME-Autostart-enabled=true
 Name[en_US]=Unclutter-xfixes
@@ -76,8 +76,6 @@ EOF
 echo "Disabling screen timeout and screensaver..."
 gsettings set org.gnome.desktop.session idle-delay 0
 gsettings set org.gnome.desktop.screensaver lock-enabled false
-systemctl stop lightdm.service
-systemctl disable lightdm.service
 systemctl mask suspend.target
 
 # Step 8: Add xset commands to disable DPMS and screen blanking
