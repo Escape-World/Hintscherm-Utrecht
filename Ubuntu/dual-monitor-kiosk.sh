@@ -49,7 +49,7 @@ mkdir -p /etc/xdg/autostart
 cat <<EOF > /etc/xdg/autostart/chromium1.desktop
 [Desktop Entry]
 Type=Application
-Exec=chromium-browser --noerrdialogs --kiosk --window-position=0,0 --window-size=1920,1080 "$URL1"
+Exec=sh -c "DISPLAY=:0 chromium-browser --noerrdialogs --kiosk --window-position=0,0 --window-size=1920,1080 '$URL1'; sleep 5"
 Hidden=false
 X-GNOME-Autostart-enabled=true
 Name[en_US]=Chromium1
@@ -60,7 +60,7 @@ EOF
 cat <<EOF > /etc/xdg/autostart/chromium2.desktop
 [Desktop Entry]
 Type=Application
-Exec=chromium-browser --noerrdialogs --kiosk --window-position=1920,0 --window-size=1920,1080 "$URL2"
+Exec=sh -c "DISPLAY=:0 chromium-browser --noerrdialogs --kiosk --window-position=1920,0 --window-size=1920,1080 '$URL2'"
 Hidden=false
 X-GNOME-Autostart-enabled=true
 Name[en_US]=Chromium2
@@ -88,8 +88,6 @@ EOF
 echo "Disabling screen timeout and screensaver..."
 gsettings set org.gnome.desktop.session idle-delay 0
 gsettings set org.gnome.desktop.screensaver lock-enabled false
-systemctl stop gdm.service
-systemctl disable gdm.service
 systemctl mask suspend.target
 
 # Step 8: Add xset commands to disable DPMS and screen blanking
