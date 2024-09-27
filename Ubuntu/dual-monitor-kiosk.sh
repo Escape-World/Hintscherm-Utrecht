@@ -9,36 +9,37 @@ fi
 read -p "Enter the URL to display on the first monitor in kiosk mode: " URL1
 read -p "Enter the URL to display on the second monitor in kiosk mode: " URL2
 
-# Step 5: Install Chromium and configure kiosk mode
-echo "Installing Chromium..."
-apt install -y chromium-browser
+# Step 1: Ensure second monitor is detected and configured
+echo "Configuring monitors..."
+xrandr --output HDMI-1 --auto --right-of HDMI-2
 
-echo "Configuring Chromium kiosk mode..."
+# Step 2: Configure Firefox kiosk mode
+echo "Configuring Firefox kiosk mode..."
 mkdir -p /etc/xdg/autostart
 
-cat <<EOF > /etc/xdg/autostart/chromium1.desktop
+cat <<EOF > /etc/xdg/autostart/firefox1.desktop
 [Desktop Entry]
 Type=Application
-Exec=chromium-browser --noerrdialogs --kiosk --window-position=0,0 --window-size=1920,1080 '$URL1'; sleep 5"
+Exec=firefox --kiosk --window-position=0,0 --window-size=1920,1080 "$URL1"
 Hidden=false
 X-GNOME-Autostart-enabled=true
-Name[en_US]=Chromium1
-Name=Chromium1
-Comment=Start Chromium in kiosk mode on the first monitor
+Name[en_US]=Firefox1
+Name=Firefox1
+Comment=Start Firefox in kiosk mode on the first monitor
 EOF
 
-cat <<EOF > /etc/xdg/autostart/chromium2.desktop
+cat <<EOF > /etc/xdg/autostart/firefox2.desktop
 [Desktop Entry]
 Type=Application
-Exec=chromium-browser --noerrdialogs --kiosk --window-position=1920,0 --window-size=1920,1080 '$URL2'"
+Exec=bash -c "sleep 5 && firefox --kiosk --window-position=1920,0 --window-size=1920,1080 \"$URL2\""
 Hidden=false
 X-GNOME-Autostart-enabled=true
-Name[en_US]=Chromium2
-Name=Chromium2
-Comment=Start Chromium in kiosk mode on the second monitor
+Name[en_US]=Firefox2
+Name=Firefox2
+Comment=Start Firefox in kiosk mode on the second monitor
 EOF
 
-# Step 6: Install unclutter-xfixes to hide the cursor immediately
+# Step 3: Install unclutter-xfixes to hide the cursor immediately
 echo "Installing unclutter-xfixes..."
 apt install -y unclutter-xfixes
 
@@ -54,13 +55,13 @@ Name=Unclutter-xfixes
 Comment=Hide the cursor immediately
 EOF
 
-# Step 7: Disable screen timeout and screensaver
+# Step 4: Disable screen timeout and screensaver
 echo "Disabling screen timeout and screensaver..."
 gsettings set org.gnome.desktop.session idle-delay 0
 gsettings set org.gnome.desktop.screensaver lock-enabled false
 systemctl mask suspend.target
 
-# Step 8: Add xset commands to disable DPMS and screen blanking
+# Step 5: Add xset commands to disable DPMS and screen blanking
 echo "Disabling DPMS and screen blanking..."
 cat <<EOF > /etc/xdg/autostart/disable-dpms.desktop
 [Desktop Entry]
@@ -73,6 +74,6 @@ Name=Disable DPMS
 Comment=Disable DPMS and screen blanking
 EOF
 
-# Step 9: Reboot
+# Step 6: Reboot
 echo "Rebooting..."
 reboot
