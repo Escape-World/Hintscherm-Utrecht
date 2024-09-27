@@ -76,7 +76,7 @@ echo "Configuring unclutter-xfixes to hide the cursor immediately..."
 cat <<EOF > /etc/xdg/autostart/unclutter-xfixes.desktop
 [Desktop Entry]
 Type=Application
-Exec=unclutter-xfixes -init
+Exec=unclutter-xfixes -noevents -timeout 0
 Hidden=false
 X-GNOME-Autostart-enabled=true
 Name[en_US]=Unclutter-xfixes
