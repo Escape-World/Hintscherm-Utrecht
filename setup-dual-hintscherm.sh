@@ -35,13 +35,10 @@ xset -dpms
 unclutter -idle 0.1 -root &
 
 # Start Chromium in kiosk mode on display 1 (HDMI-1)
-export DISPLAY=:0.0
-chromium-browser --noerrdialogs --disable-infobars --kiosk $kiosk_url_1 --window-position=0,0 --start-fullscreen --disable-gpu &
+chromium-browser --new-window --noerrdialogs --disable-infobars --kiosk $kiosk_url_1 --window-size=1920,1080 --window-position=0,0 --user-data-dir=/home/$pi_username/chrome-profile-1 &
 
 # Start Chromium in kiosk mode on display 2 (HDMI-2)
-export DISPLAY=:0.1
-chromium-browser --noerrdialogs --disable-infobars --kiosk $kiosk_url_2 --window-position=1920,0 --start-fullscreen --disable-gpu &
-EOL
+chromium-browser --new-window --noerrdialogs --disable-infobars --kiosk $kiosk_url_2 --window-size=1920,1080 --window-position=1920,0 --user-data-dir=/home/$pi_username/chrome-profile-2 &
 
 # Create and configure .xinitrc file
 cat <<EOL > ~/.xinitrc
