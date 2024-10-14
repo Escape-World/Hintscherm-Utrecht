@@ -1,4 +1,4 @@
-#!/bin/bash
+aut#!/bin/bash
 
 # Ask the user for the URLs to display
 read -p "Enter the URL for display 1: " kiosk_url_1
@@ -34,7 +34,7 @@ xset -dpms
 unclutter -idle 0.1 -root &
 
 # Start Chromium in kiosk mode on display 1 (HDMI-1)
-chromium-browser --new-window --noerrdialogs --disable-infobars --kiosk $kiosk_url_1 --window-size=3840,1080 --window-position=0,0 &
+chromium-browser --noerrdialogs --disable-infobars --kiosk $kiosk_url_1 --window-size=3840,1080 --window-position=0,0 &
 
 # Create and configure .xinitrc file
 cat <<EOL > ~/.xinitrc
